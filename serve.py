@@ -81,3 +81,7 @@ def feedback(data: Feedback):
     df = pd.DataFrame([log_entry])
     df.to_csv(FEEDBACK_FILE, mode="a", header=False, index=False)
     return {"status": "feedback received"}
+
+# Run server
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
