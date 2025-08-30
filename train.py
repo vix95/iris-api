@@ -1,33 +1,26 @@
 import joblib
 from sklearn.datasets import load_iris
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from azureml.core import Workspace, Run, Dataset
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 
-# Connect to Azure ML workspace
-ws = Workspace.from_config()
-
-# Load data
+# Load dataset
 iris = load_iris()
-X_train, X_test, y_train, y_test = train_test_split(
-    iris.data, iris.target, test_size=0.2, random_state=42
-)
+X = iris.data
+y = iris.target
 
-# Train model
-model = RandomForestClassifier(n_estimators=100, random_state=42)
+# Split into train/test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train a simple model
+model = LogisticRegression(max_iter=200)
 model.fit(X_train, y_train)
 
-# Save model
+# Evaluate on test data
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Test accuracy: {accuracy:.2f}")
+
+# Save model to file
 joblib.dump(model, "iris_model.pkl")
-
-# Register model in Azure ML
-run = Run.get_context()
-run.upload_file("outputs/iris_model.pkl", "iris_model.pkl")
-
-model_reg = ws.models.register(
-    model_path="iris_model.pkl",
-    model_name="iris-classifier",
-    description="RandomForest model for Iris classification"
-)
-
-print("Model registered:", model_reg.name, model_reg.version)
+print("Model saved as iris_model.pkl")
